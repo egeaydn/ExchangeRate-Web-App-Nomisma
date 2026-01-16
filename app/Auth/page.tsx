@@ -41,10 +41,8 @@ export default function Login() {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
             <div className="p-8 flex justify-between items-center">
-                {/* Logo */}
                 <h1 className="text-2xl text-gray-500 tracking-[0.3em] font-light">N O M I S M A</h1>
 
-                {/* Language Selector */}
                 <div className="relative">
                     <button
                         onClick={toggleDropdown}
@@ -58,7 +56,6 @@ export default function Login() {
                         </span>
                     </button>
 
-                    {/* Dropdown Menu */}
                     {isOpen && (
                         <div className="absolute right-0 mt-2 w-full min-w-[140px] bg-white border border-gray-300 rounded-md shadow-lg z-10">
                             <div
@@ -80,11 +77,9 @@ export default function Login() {
                 </div>
             </div>
 
-            {/* Main Content Area */}
             <div className="flex-1 flex items-center justify-center p-4">
                 <div className="w-[1000px] h-[700px] bg-white rounded-3xl shadow-2xl overflow-hidden flex">
 
-                    {/* Left Side - Login Form */}
                     <div className="w-1/2 p-16 flex flex-col justify-center">
                         <div className="text-center mb-10">
                             <h2 className="text-4xl font-serif font-bold text-gray-900 mb-2 tracking-wide">Sign In</h2>
