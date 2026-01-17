@@ -15,49 +15,75 @@ export type ExchangeRatesResponse = {
 
 export async function getLiveRates(base: string = 'TRY') {
     try {
-        // 1. Fetch current rates
-        const todayRes = await fetch(`https://api.frankfurter.app/latest?from=${base}`);
-        if (!todayRes.ok) throw new Error('Failed to fetch latest rates');
-        const todayData: ExchangeRatesResponse = await todayRes.json();
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - 7); // Go back 7 days to ensure we get at least 2 data points (weekends etc)
 
-        // 2. Fetch yesterday's rates (for percentage change)
-        // Calculate yesterday's date formatted as YYYY-MM-DD
-        const date = new Date();
-        date.setDate(date.getDate() - 1);
+        const endStr = endDate.toISOString().split('T')[0];
+        const startStr = startDate.toISOString().split('T')[0];
 
-        // Skip weekends roughly (simple approach: if Sun(0) -> Fri, if Sat(6) -> Fri)
-        // Frankfurter automatically handles weekends by returning the last available trading day if we request a specific date, 
-        // but requesting 'latest' gives us the most recent. 
-        // For "yesterday", we simply ask for 1 day ago. If it was a weekend, API might handle or we might get same day.
-        // Better approach for percentage: get a date definitely before today.
-        // Let's just try yesterday.
-        const yesterdayStr = date.toISOString().split('T')[0];
+        // Fetch time series data
+        const res = await fetch(`https://api.frankfurter.app/${startStr}..${endStr}?from=${base}`);
+        if (!res.ok) throw new Error('Failed to fetch rates');
 
-        const yesterdayRes = await fetch(`https://api.frankfurter.app/${yesterdayStr}?from=${base}`);
-        let yesterdayData: ExchangeRatesResponse | null = null;
+        const data = await res.json();
+        // data.rates is { "2024-01-10": { ... }, "2024-01-11": { ... } }
 
-        if (yesterdayRes.ok) {
-            yesterdayData = await yesterdayRes.json();
-        }
+        // Sort dates to be sure
+        const dates = Object.keys(data.rates).sort();
 
-        // 3. Combine data
-        const combinedData: CurrencyData[] = Object.entries(todayData.rates).map(([symbol, rate]) => {
-            const prevRate = yesterdayData?.rates[symbol] || rate;
+        if (dates.length < 1) return [];
+
+        const latestDate = dates[dates.length - 1];
+        const previousDate = dates.length > 1 ? dates[dates.length - 2] : latestDate;
+
+        const latestRates = data.rates[latestDate];
+        const previousRates = data.rates[previousDate];
+
+        const combinedData: CurrencyData[] = Object.entries(latestRates).map(([symbol, rate]) => {
+            const prevRate = previousRates[symbol] || (rate as number);
             return {
                 code: symbol,
-                rate: rate,
-                previousRate: prevRate,
-                date: todayData.date,
+                rate: rate as number,
+                previousRate: prevRate as number,
+                date: latestDate,
             };
         });
 
-        // Sort by code or valid criteria if needed. 
-        // Let's return a subset or all. The user's table had specific ones.
-        // We will return all, frontend can filter.
         return combinedData;
 
     } catch (error) {
         console.error('Error fetching rates:', error);
+        return [];
+    }
+}
+
+export async function getHistoricalRates(base: string, target: string, days: number = 30) {
+    try {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - days);
+
+        const endStr = endDate.toISOString().split('T')[0];
+        const startStr = startDate.toISOString().split('T')[0];
+
+        // Fetch historical data from Frankfurter
+        const res = await fetch(`https://api.frankfurter.app/${startStr}..${endStr}?from=${base}&to=${target}`);
+
+        if (!res.ok) throw new Error('Failed to fetch historical rates');
+
+        const data = await res.json();
+
+        // Transform response: { rates: { "2024-01-01": { "USD": 1.1 }, ... } }
+        // into array: [{ date: "2024-01-01", rate: 1.1 }]
+        const history: { date: string; rate: number }[] = Object.entries(data.rates).map(([date, rates]: [string, any]) => ({
+            date,
+            rate: rates[target]
+        }));
+
+        return history;
+    } catch (error) {
+        console.error('Error fetching historical rates:', error);
         return [];
     }
 }

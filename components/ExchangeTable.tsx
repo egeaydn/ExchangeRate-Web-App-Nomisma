@@ -7,7 +7,10 @@ import {
     TrendingUp
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getLiveRates, type CurrencyData } from "@/app/actions/currency";
+
+import { motion } from "framer-motion";
 
 const CURRENCY_TO_FLAG_CODE: Record<string, string> = {
     USD: "us",
@@ -35,6 +38,7 @@ const CURRENCY_TO_FLAG_CODE: Record<string, string> = {
 const POPULAR_CURRENCIES = ["TRY", "USD", "EUR", "GBP", "CHF", "JPY"];
 
 export default function ExchangeTable() {
+    const router = useRouter();
     const [baseCurrency, setBaseCurrency] = useState("TRY");
     const [rates, setRates] = useState<CurrencyData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -67,7 +71,12 @@ export default function ExchangeTable() {
     const displayRates = rates.filter(r => CURRENCY_TO_FLAG_CODE[r.code]);
 
     return (
-        <div className="w-full mt-20 p-2 rounded-t-3xl bg-sky-400/30 backdrop-blur-md border border-white/10 shadow-2xl min-h-[500px]">
+        <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            className="w-full mt-20 p-2 rounded-t-3xl bg-sky-400/30 backdrop-blur-md border border-white/10 shadow-2xl min-h-[500px]"
+        >
             {/* Currency Selector Toolbar */}
             <div className="flex justify-end px-4 py-2 mb-2">
                 <div className="relative z-20">
@@ -159,9 +168,13 @@ export default function ExchangeTable() {
                             const sales = val * 1.0010;  // Slightly more
 
                             return (
-                                <tr
+                                <motion.tr
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.05, duration: 0.3 }}
                                     key={rateData.code}
-                                    className={`border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors ${index % 2 === 0 ? '' : 'bg-black/5'}`}
+                                    onClick={() => router.push(`/currency/${rateData.code}?base=${baseCurrency}`)}
+                                    className={`border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors cursor-pointer ${index % 2 === 0 ? '' : 'bg-black/5'}`}
                                 >
                                     <td className="py-4 pl-8">
                                         <div className="flex items-center gap-8">
@@ -192,13 +205,13 @@ export default function ExchangeTable() {
                                         }`}>
                                         %{increase.toFixed(2)}
                                     </td>
-                                </tr>
+                                </motion.tr>
                             );
                         })
                     )}
                 </tbody>
             </table>
-        </div>
+        </motion.div>
     );
 }
 

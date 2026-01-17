@@ -1,4 +1,5 @@
-'use client'
+'use client';
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
 import ExchangeTable from "@/components/ExchangeTable";
@@ -15,11 +16,16 @@ export default function Home() {
         <Navbar />
 
         <div className="flex-1 flex items-center justify-center w-full px-4 relative z-10">
-          <h1 className="text-5xl md:text-6xl font-bold text-white text-center drop-shadow-2xl max-w-5xl leading-tight opacity-90">
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="text-5xl md:text-6xl font-bold text-white text-center drop-shadow-2xl max-w-5xl leading-tight opacity-90"
+          >
             We Are The Best Place to<br />
             Find The Most Accurate<br />
             Exchange Rates.
-          </h1>
+          </motion.h1>
         </div>
       </div>
 
