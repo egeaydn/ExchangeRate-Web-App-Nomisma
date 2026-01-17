@@ -6,7 +6,12 @@ import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock, faFileLines, faCircleQuestion } from "@fortawesome/free-solid-svg-icons";
 import { auth } from "../../lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+    signInWithEmailAndPassword,
+    setPersistence,
+    browserLocalPersistence,
+    browserSessionPersistence
+} from "firebase/auth";
 
 export default function Login() {
 
@@ -14,6 +19,7 @@ export default function Login() {
     const [isOpen, setIsOpen] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [rememberMe, setRememberMe] = useState(true); // Default to true as per user request ("her seferinde giriş yapmak zorunda kalmasın")
     const [error, setError] = useState("");
     const router = useRouter();
 
@@ -29,6 +35,9 @@ export default function Login() {
         setError("");
 
         try {
+            // Set persistence based on "Remember Me" checkbox
+            await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+
             await signInWithEmailAndPassword(auth, email, password);
             alert("Login successful!");
             router.push('/');
@@ -121,16 +130,21 @@ export default function Login() {
 
                             <div className="flex items-center justify-between text-xs mt-4">
                                 <label className="flex items-center cursor-pointer select-none">
-                                    <input type="checkbox" className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                                    <input
+                                        type="checkbox"
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                        className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                    />
                                     <span className="ml-2 font-bold text-gray-800">Remember Me</span>
                                 </label>
                                 <a href="#" className="font-bold text-[#4A86C6] hover:text-blue-800 border-b border-[#4A86C6] pb-0.5">Forgot Password</a>
                             </div>
 
                             <div className="relative flex py-4 items-center">
-                                <div className="flex-grow border-t border-gray-300"></div>
-                                <span className="flex-shrink-0 mx-4 text-gray-400 font-bold text-xs">or</span>
-                                <div className="flex-grow border-t border-gray-300"></div>
+                                <div className="grow border-t border-gray-300"></div>
+                                <span className="shrink-0 mx-4 text-gray-400 font-bold text-xs">or</span>
+                                <div className="grow border-t border-gray-300"></div>
                             </div>
 
                             <div className="text-center text-xs font-bold text-gray-700">
