@@ -9,27 +9,27 @@ import {
 import { useEffect, useState } from "react";
 import { getLiveRates, type CurrencyData } from "@/app/actions/currency";
 
-const FLAG_MAP: Record<string, string> = {
-    USD: "🇺🇸",
-    EUR: "🇪🇺",
-    GBP: "🇬🇧",
-    CHF: "🇨🇭",
-    AUD: "🇦🇺",
-    CAD: "🇨🇦",
-    TRY: "🇹🇷",
-    JPY: "🇯🇵",
-    CNY: "🇨🇳",
-    SEK: "🇸🇪",
-    NZD: "🇳🇿",
-    MXN: "🇲🇽",
-    SGD: "🇸🇬",
-    HKD: "🇭🇰",
-    NOK: "🇳🇴",
-    KRW: "🇰🇷",
-    INR: "🇮🇳",
-    RUB: "🇷🇺",
-    ZAR: "🇿🇦",
-    BRL: "🇧🇷",
+const CURRENCY_TO_FLAG_CODE: Record<string, string> = {
+    USD: "us",
+    EUR: "eu",
+    GBP: "gb",
+    CHF: "ch",
+    AUD: "au",
+    CAD: "ca",
+    TRY: "tr",
+    JPY: "jp",
+    CNY: "cn",
+    SEK: "se",
+    NZD: "nz",
+    MXN: "mx",
+    SGD: "sg",
+    HKD: "hk",
+    NOK: "no",
+    KRW: "kr",
+    INR: "in",
+    RUB: "ru",
+    ZAR: "za",
+    BRL: "br",
 };
 
 const POPULAR_CURRENCIES = ["TRY", "USD", "EUR", "GBP", "CHF", "JPY"];
@@ -64,24 +64,29 @@ export default function ExchangeTable() {
     // Let's show a good mix but prioritize popular ones.
     // For now showing all that have flags or just first N? 
     // Let's filter by FLAG_MAP keys to keep it clean.
-    const displayRates = rates.filter(r => FLAG_MAP[r.code]);
+    const displayRates = rates.filter(r => CURRENCY_TO_FLAG_CODE[r.code]);
 
     return (
         <div className="w-full mt-20 p-2 rounded-t-3xl bg-sky-400/30 backdrop-blur-md border border-white/10 shadow-2xl min-h-[500px]">
-            {/* Currency Selector */}
-            <div className="absolute top-4 right-8 z-20">
-                <div className="relative">
+            {/* Currency Selector Toolbar */}
+            <div className="flex justify-end px-4 py-2 mb-2">
+                <div className="relative z-20">
                     <button
                         onClick={() => setIsOpen(!isOpen)}
                         className="flex items-center gap-2 bg-black/40 text-white px-4 py-2 rounded-xl hover:bg-black/50 transition-colors border border-white/10"
                     >
-                        <span className="text-xl">{FLAG_MAP[baseCurrency] || "🌐"}</span>
+                        <img
+                            src={`https://flagcdn.com/w40/${CURRENCY_TO_FLAG_CODE[baseCurrency] || 'un'}.png`}
+                            srcSet={`https://flagcdn.com/w80/${CURRENCY_TO_FLAG_CODE[baseCurrency] || 'un'}.png 2x`}
+                            alt={baseCurrency}
+                            className="w-6 h-4 object-cover rounded shadow-sm"
+                        />
                         <span className="font-bold">{baseCurrency}</span>
                         <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     {isOpen && (
-                        <div className="absolute right-0 mt-2 w-32 bg-slate-900 border border-slate-700 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto">
+                        <div className="absolute right-0 mt-2 w-32 z-50 bg-slate-900 border border-slate-700 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto">
                             {POPULAR_CURRENCIES.map(curr => (
                                 <button
                                     key={curr}
@@ -91,7 +96,12 @@ export default function ExchangeTable() {
                                     }}
                                     className="w-full text-left px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white flex items-center gap-3 transition-colors"
                                 >
-                                    <span>{FLAG_MAP[curr]}</span>
+                                    <img
+                                        src={`https://flagcdn.com/w40/${CURRENCY_TO_FLAG_CODE[curr] || 'un'}.png`}
+                                        srcSet={`https://flagcdn.com/w80/${CURRENCY_TO_FLAG_CODE[curr] || 'un'}.png 2x`}
+                                        alt={curr}
+                                        className="w-5 h-3.5 object-cover rounded shadow-sm"
+                                    />
                                     <span>{curr}</span>
                                 </button>
                             ))}
@@ -155,9 +165,15 @@ export default function ExchangeTable() {
                                 >
                                     <td className="py-4 pl-8">
                                         <div className="flex items-center gap-8">
-                                            <span className="text-3xl drop-shadow-md">{FLAG_MAP[rateData.code] || "🏳️"}</span>
+                                            <img
+                                                src={`https://flagcdn.com/w80/${CURRENCY_TO_FLAG_CODE[rateData.code] || 'un'}.png`}
+                                                srcSet={`https://flagcdn.com/w160/${CURRENCY_TO_FLAG_CODE[rateData.code] || 'un'}.png 2x`}
+                                                alt={rateData.code}
+                                                className="w-10 h-7 object-cover rounded shadow-md"
+                                            />
                                             <div className="flex flex-col">
-                                                <span className="font-medium text-gray-200">{rateData.code}/{baseCurrency}</span>
+                                                <span className="font-medium text-gray-200 text-lg">{rateData.code}</span>
+                                                <span className="text-xs text-gray-500">{rateData.code}/{baseCurrency}</span>
                                             </div>
                                             <div className="hidden sm:flex items-center gap-1 text-xs text-gray-300 ml-auto mr-12 bg-black/20 px-2 py-0.5 rounded">
                                                 {rateData.date} <span className="opacity-70">🕒</span>
