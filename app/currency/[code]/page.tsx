@@ -243,7 +243,6 @@ export default function CurrencyDetail() {
                     </div>
                 )}
             </main>
-            <Footer />
         </div>
     );
 }
